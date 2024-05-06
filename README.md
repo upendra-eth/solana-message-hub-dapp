@@ -1,6 +1,7 @@
 # Solana Message Hub
 
 The Solana Message Hub is a decentralized application (DApp) that enables users to store and manage messages securely on the Solana blockchain. This repository contains a smart contract written in Rust using the Anchor framework and a frontend interface built with Next.js and TypeScript for interacting with the deployed contract.
+* View Live Demo: [Solana Message Hub](https://blockchain-wala-message-hub.vercel.app/)
 
 ## Features
 
