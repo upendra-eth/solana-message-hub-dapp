@@ -30,7 +30,7 @@ export default function Home() {
         <div className={styles.message_search_bar}>
             <input
               className={styles.message_key_input}
-              placeholder="Message Key!"
+              placeholder="Write Message Key!"
               onChange={(e) => setSearchKey(e.target.value)}
               value={searchKey}
             />
