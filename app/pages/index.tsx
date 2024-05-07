@@ -5,6 +5,8 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import useIsMounted from "./api/utils/useIsMounted";
 import createMessage from "./api/createMessage";
 import styles from "../styles/Home.module.css";
+import updateMessage from "./api/updateMessage";
+import fetchMessage from "./api/fetchMessage"
 
 
 export default function Home() {
@@ -12,7 +14,10 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [messageAuthor, setMessageAuthor] = useState("");
   const [messageTime, setMessageTime] = useState(0);
-  const [inputtedMessage, setInputtedMessage] = useState("");
+  const [createMessageInput, setCreateMessageInput] = useState("");
+  const [updateMessageInput, setUpdateMessageInput] = useState("");
+  const [searchKey, setSearchKey] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
 
 
   const wallet = useAnchorWallet();
@@ -21,7 +26,36 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.navbar}>{mounted && <WalletMultiButton />}</div>
+      {wallet ? (<div className={styles.navbar}>
+        <div className={styles.message_search_bar}>
+            <input
+              className={styles.message_key_input}
+              placeholder="Message Key!"
+              onChange={(e) => setSearchKey(e.target.value)}
+              value={searchKey}
+            />
+            <button
+              className={styles.search_message_button}
+              disabled={!searchKey}
+              onClick={async () => {
+                const message = await fetchMessage(
+                  searchKey,
+                  wallet
+                );
+                if (message) {
+                  setMessage(message.content.toString());
+                  setMessageAuthor(message.author.toString());
+                  setMessageTime(message.timestamp.toNumber() * 1000);
+                  setSearchKey("");
+                }
+              }}
+            >
+              Search Message!
+            </button>
+          </div>
+        {mounted && <WalletMultiButton />}</div>
+
+      ) : <div className={styles.navbar}>{mounted && <WalletMultiButton />}</div>}
 
 
       <div className={styles.main}>
@@ -31,39 +65,69 @@ export default function Home() {
         </h1>
 
 
-        {wallet && (
+        {wallet && message ? (
           <div className={styles.message_bar}>
             <input
               className={styles.message_input}
               placeholder="Write Your Message!"
-              onChange={(e) => setInputtedMessage(e.target.value)}
-              value={inputtedMessage}
+              onChange={(e) => setUpdateMessageInput(e.target.value)}
+              value={updateMessageInput}
             />
             <button
               className={styles.message_button}
-              disabled={!inputtedMessage}
+              disabled={!updateMessageInput}
               onClick={async () => {
-                const message = await createMessage(
-                  inputtedMessage,
+                const updatedMessage = await updateMessage(
+                  updateMessageInput,
                   wallet,
                   messageAccount
                 );
-                if (message) {
-                  setMessage(message.content.toString());
-                  setMessageAuthor(message.author.toString());
-                  setMessageTime(message.timestamp.toNumber() * 1000);
-                  setInputtedMessage("");
+                if (updatedMessage) {
+                  setMessage(updatedMessage.content.toString());
+                  setMessageAuthor(updatedMessage.author.toString());
+                  setMessageTime(updatedMessage.timestamp.toNumber() * 1000);
+                  setUpdateMessageInput("");
                 }
               }}
             >
-              Create a Message!
+              Update This Message!
             </button>
           </div>
+        ) : (
+          wallet && (
+            <div className={styles.message_bar}>
+              <input
+                className={styles.message_input}
+                placeholder="Write Your Message!"
+                onChange={(e) => setCreateMessageInput(e.target.value)}
+                value={createMessageInput}
+              />
+              <button
+                className={styles.message_button}
+                disabled={!createMessageInput}
+                onClick={async () => {
+                  const newMessage = await createMessage(
+                    createMessageInput,
+                    wallet,
+                    messageAccount
+                  );
+                  if (newMessage) {
+                    setMessage(newMessage.content.toString());
+                    setMessageAuthor(newMessage.author.toString());
+                    setMessageTime(newMessage.timestamp.toNumber() * 1000);
+                    setCreateMessageInput("");
+                  }
+                }}
+              >
+                Create a Message!
+              </button>
+            </div>
+          )
         )}
-
 
         {wallet && message && (
           <div className={styles.card}>
+            <h2>Message Key: {messageAccount.publicKey.toString()}</h2>
             <h2>Current Message: {message}</h2>
             <h2>
               Message Author: {messageAuthor.substring(0, 4)}
@@ -73,6 +137,7 @@ export default function Home() {
             <h2>Time Published: {new Date(messageTime).toLocaleString()}</h2>
           </div>
         )}
+
       </div>
     </div>
   );

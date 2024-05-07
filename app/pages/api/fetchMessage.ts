@@ -12,6 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Copyright 2024 user
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     https://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // import { Program,  } from "@project-serum/anchor";
 import {AnchorProvider, web3 } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
@@ -21,11 +35,12 @@ import {
   commitmentLevel,
 } from "./utils/constants";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
+import { publicKey } from "@coral-xyz/anchor/dist/cjs/utils";
+import { PublicKey } from "@solana/web3.js";
 
-export default async function createMessage(
+export default async function fetchMessage(
   inputtedMessage: string,
   wallet: AnchorWallet,
-  messageAccount: web3.Keypair
 ) {
 
   const provider = new AnchorProvider(connection, wallet, {
@@ -37,20 +52,20 @@ export default async function createMessage(
 
   try {
     /* interact with the program via rpc */
-    const txn = await program.rpc.createMessage(inputtedMessage, {
-      accounts: {
-        message: messageAccount.publicKey,
-        author: provider.wallet.publicKey,
-        systemProgram: web3.SystemProgram.programId,
-      },
-      signers: [messageAccount],
-    });
+    // const txn = await program.rpc.createMessage(inputtedMessage, {
+    //   accounts: {
+    //     message: messageAccount.publicKey,
+    //     author: provider.wallet.publicKey,
+    //     systemProgram: web3.SystemProgram.programId,
+    //   },
+    //   signers: [messageAccount],
+    // });
 
-
+    let key = new PublicKey(inputtedMessage);
     const message = await program.account.message.fetch(
-      messageAccount.publicKey
+      key
     );
-    console.log("Current massage key ========== : ", messageAccount.publicKey.toString());
+    console.log("Current massage key ========== : ", key.toString());
     return message;
   } catch (err) {
     console.log("Transaction error: ", err);
